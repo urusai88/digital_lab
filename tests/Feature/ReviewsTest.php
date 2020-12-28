@@ -47,14 +47,19 @@ class ReviewsTest extends TestCase
 
         $this->postJson('/api/reviews/like')->assertStatus(422); // no data
         $this->postJson('/api/reviews/like', ['id' => 0])->assertStatus(422); // wrong data
-        $this->postJson('/api/reviews/like', ['id' => $reviewId])->assertSuccessful(); // success
+        // success
+        $this->postJson('/api/reviews/like', ['id' => $reviewId])->assertSuccessful();
+        // success другой адрес
         $this->postJson('/api/reviews/like', [
-            'id' => $reviewId, 'ip_address' => $this->faker->ipv4,
-        ])->assertSuccessful(); // другой адрес
+            'id' => $reviewId, 'ip_address' => $ip = $this->faker->ipv4,
+        ])->assertSuccessful();
         $this->postJson('/api/reviews/like', ['id' => $reviewId])->assertStatus(422); // повторный лайк
 
         $this->assertDatabaseHas('reviews', ['likes_count' => 2]); // проверка счётчика
-        $this->assertEquals(2, ReviewLikeEntity::query()->where(['review_id' => $reviewId])->count()); // проверка количества строк
+        // проверка строк
+        $this->assertEquals(2, ReviewLikeEntity::query()->where(['review_id' => $reviewId])->count());
+        $this->assertDatabaseHas('review_likes', ['review_id' => $reviewId, 'ip_address' => $ip]);
+        $this->assertDatabaseHas('review_likes', ['review_id' => $reviewId, 'ip_address' => '127.0.0.1']);
     }
 
     public function testListReviews()

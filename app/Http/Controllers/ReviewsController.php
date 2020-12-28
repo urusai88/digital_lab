@@ -33,12 +33,16 @@ class ReviewsController extends Controller
 
     public function reviewsList(Request $request)
     {
-        return ReviewEntity::query()
+        $query = ReviewEntity::query()
             ->offset($request->query('offset', 0))
             ->limit(10)
             ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->get();
+            ->orderByDesc('id');
+
+        return [
+            'items' => $query->get(),
+            'count' => $query->count(),
+        ];
     }
 
     public function reviewsLike(Request $request)
