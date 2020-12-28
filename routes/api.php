@@ -21,4 +21,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['prefix' => '/reviews'], function () {
     Route::post('/create', [ReviewsController::class, 'reviewCreate']);
+    Route::get('/list', [ReviewsController::class, 'reviewsList']);
+    Route::post('/like', [ReviewsController::class, 'reviewsLike']);
 });

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ReviewEntity;
+use App\Models\ReviewLikeEntity;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class ReviewsController extends Controller
@@ -29,8 +31,44 @@ class ReviewsController extends Controller
         return $model;
     }
 
-    public function reviewsList()
+    public function reviewsList(Request $request)
     {
+        return ReviewEntity::query()
+            ->offset($request->query('offset', 0))
+            ->limit(10)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+    }
 
+    public function reviewsLike(Request $request)
+    {
+        $data = $request->validate([
+            'id' => 'required|int|exists:reviews',
+        ]);
+
+        return DB::transaction(function () use ($data, $request) {
+            /** @var ReviewEntity $review */
+            $review = ReviewEntity::query()->findOrFail($data['id']);
+            $ipAddress = !config('app.debug') ? $request->ip() : $request->input('ip_address', $request->ip());
+            $exists = ReviewLikeEntity::query()
+                ->where(['review_id' => $data['id'], 'ip_address' => $ipAddress])
+                ->exists();
+
+            if ($exists) {
+                return response([
+                    'message' => 'Нельзя лайкать одну запись несколько раз',
+                ], 422);
+            }
+
+            $reviewLike = new ReviewLikeEntity();
+            $reviewLike->review_id = $review->id;
+            $reviewLike->ip_address = $ipAddress;
+            $reviewLike->saveOrFail();
+
+            ReviewEntity::query()->whereKey($review->id)->increment('likes_count');
+
+            return $exists ? 'true' : 'false';
+        });
     }
 }
