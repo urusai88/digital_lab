@@ -20,6 +20,7 @@ class ReviewEntity extends Model
 
     protected $table = 'reviews';
     protected $hidden = ['ip_address'];
+    protected $casts = ['likes_count' => 'integer'];
 
     protected static function newFactory()
     {
