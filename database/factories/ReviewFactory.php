@@ -25,7 +25,7 @@ class ReviewFactory extends Factory
         return [
             'author_name' => $this->faker->name,
             'ip_address' => $this->faker->ipv4,
-            'body' => $this->faker->text,
+            'body' => $this->faker->text(500),
             'likes_count' => $this->faker->numberBetween(0, 10),
             'created_at' => $dt = $this->faker->dateTime,
             'updated_at' => $dt,

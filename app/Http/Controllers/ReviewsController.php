@@ -6,6 +6,7 @@ use App\Models\ReviewEntity;
 use App\Models\ReviewLikeEntity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Throwable;
 
 class ReviewsController extends Controller
@@ -26,6 +27,7 @@ class ReviewsController extends Controller
         $model->body = $data['body'];
         $model->ip_address = $request->ip();
         $model->likes_count = 0;
+
         $model->saveOrFail();
 
         return $model;
@@ -33,14 +35,23 @@ class ReviewsController extends Controller
 
     public function reviewsList(Request $request)
     {
-        $query = ReviewEntity::query()
-            ->offset($request->query('offset', 0))
-            ->limit(10)
-            ->orderByDesc('created_at')
-            ->orderByDesc('id');
+        $query = ReviewEntity::query();
+
+        $sort = $request->query('sort', '');
+        if (Str::contains($sort, '-likes'))
+            $query->orderBy('likes_count');
+        if (Str::contains($sort, '+likes'))
+            $query->orderBy('likes_count', 'desc');
+        if (Str::contains($sort, '-time'))
+            $query->orderBy('created_at');
+        if (Str::contains($sort, '+time'))
+            $query->orderBy('created_at', 'desc');
 
         return [
-            'items' => $query->get(),
+            'items' => (clone $query)
+                ->offset($request->query('offset', 0))
+                ->limit(10)
+                ->get(),
             'count' => $query->count(),
         ];
     }
@@ -71,8 +82,6 @@ class ReviewsController extends Controller
             $reviewLike->saveOrFail();
 
             ReviewEntity::query()->whereKey($review->id)->increment('likes_count');
-
-            return $exists ? 'true' : 'false';
         });
     }
 }
