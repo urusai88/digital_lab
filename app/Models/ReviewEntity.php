@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ReviewFactory;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,4 +20,9 @@ class ReviewEntity extends Model
 
     protected $table = 'reviews';
     protected $hidden = ['ip_address'];
+
+    protected static function newFactory()
+    {
+        return ReviewFactory::new();
+    }
 }
