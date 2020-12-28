@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Model;
 use App\Models\ReviewEntity;
 use App\Models\ReviewLikeEntity;
 use Illuminate\Database\Eloquent\Factories\Factory;
